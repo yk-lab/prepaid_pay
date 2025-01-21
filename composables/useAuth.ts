@@ -1,5 +1,6 @@
 import type { Auth, User } from "firebase/auth";
 import {
+	createUserWithEmailAndPassword,
 	getAuth,
 	onAuthStateChanged,
 	signInWithEmailAndPassword,
@@ -33,6 +34,24 @@ export function useAuth(auth: Auth = getAuth()) {
 		console.log("checkAuthState", user.value);
 	}
 
+	// メールアドレスとパスワードで登録
+	async function registerEmailPassword(email: string, password: string) {
+		const auth = getAuth();
+		try {
+			const userCredential = await createUserWithEmailAndPassword(
+				auth,
+				email,
+				password,
+			);
+			const user = userCredential.user;
+			console.log("register success", user);
+			await checkAuthState();
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	}
+
 	// ログイン
 	async function loginEmailPassword(email: string, password: string) {
 		const auth = getAuth();
@@ -62,7 +81,14 @@ export function useAuth(auth: Auth = getAuth()) {
 		}
 	}
 
-	return { isAuthed, user, checkAuthState, loginEmailPassword, logout };
+	return {
+		isAuthed,
+		user,
+		checkAuthState,
+		registerEmailPassword,
+		loginEmailPassword,
+		logout,
+	};
 }
 
 // ********************************************************
