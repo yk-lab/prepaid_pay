@@ -10,7 +10,9 @@ export const handleAuthCheck = async () => {
 		await checkAuthState();
 		return isAuthed.value;
 	} catch (error) {
-		console.error("認証状態の確認に失敗しました:", error);
+		const errorMessage =
+			error instanceof Error ? error.message : "不明なエラーが発生しました";
+		console.error("認証状態の確認に失敗しました:", errorMessage);
 		return null;
 	} finally {
 		loading.value = false;
@@ -23,6 +25,12 @@ export const getAuthErrorMessage = (error: Error): string => {
 	}
 
 	switch (error.code) {
+		case "auth/network-request-failed":
+			return "ネットワークエラーが発生しました。インターネット接続を確認してください。";
+		case "auth/too-many-requests":
+			return "アクセスが制限されています。しばらく時間をおいて再度お試しください。";
+		case "auth/popup-closed-by-user":
+			return "認証がキャンセルされました。";
 		case "auth/invalid-email":
 			return "メールアドレスの形式が正しくありません。";
 		case "auth/user-disabled":

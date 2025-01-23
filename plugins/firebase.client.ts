@@ -21,7 +21,8 @@ export default defineNuxtPlugin(() => {
 
 	// Initialize Firebase
 	const app = initializeApp(firebaseConfig);
-	const analytics = getAnalytics(app);
+	const analytics =
+		process.env.NODE_ENV === "production" ? getAnalytics(app) : null;
 
 	// setup emulators
 	if (config.public.firebase.useEmulator === "true") {

@@ -7,6 +7,8 @@
 </template>
 
 <script lang="ts" setup>
+import "notyf/notyf.min.css";
+
 useHead({
 	bodyAttrs: {
 		class: "bg-gray-50 font-sans antialiased text-gray-900",
