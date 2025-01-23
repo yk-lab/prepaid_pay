@@ -34,27 +34,39 @@ const auth = useAuth();
 const route = useRoute();
 
 const txnId = ref(route.params.txnId);
+const txn = ref<Transaction | null>(null);
+const isProcessing = ref(false);
 
-const txn = await $fetch<Transaction>(`/api/prepaid/pay/${txnId.value}/`, {
+txn.value = await $fetch<Transaction>(`/api/prepaid/pay/${txnId.value}/`, {
 	baseURL: config.public.apiUrl,
 	method: "GET",
 	headers: {
 		Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
 	},
+}).catch((error) => {
+	console.error("トランザクション情報の取得に失敗しました:", error);
+	alert("トランザクション情報の取得に失敗しました");
+	navigateTo("/");
+	return null;
 });
 
 // 残高が不足していないか確認
 const checkBalance = asyncComputed(async () => {
+	if (!txn.value) return false;
+
 	const profile = await $fetch<Profile>("/api/profile/", {
 		baseURL: config.public.apiUrl,
 		headers: {
 			Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
 		},
 	});
-	return profile.balance >= txn.amount;
+	return profile.balance >= txn.value.amount;
 });
 
 const pay = async () => {
+	if (isProcessing.value) return;
+	isProcessing.value = true;
+
 	try {
 		const txn = await $fetch<Transaction>(`/api/prepaid/pay/${txnId.value}/`, {
 			baseURL: config.public.apiUrl,
@@ -71,8 +83,11 @@ const pay = async () => {
 		location.reload();
 	} catch (e) {
 		console.error(e);
-		alert("エラーが発生しました");
-		location.reload();
+		alert(
+			"支払い処理中にエラーが発生しました。時間をおいて再度お試しください。",
+		);
+	} finally {
+		isProcessing.value = false;
 	}
 };
 </script>

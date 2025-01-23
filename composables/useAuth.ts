@@ -17,7 +17,12 @@ export function useAuth(auth: Auth = getAuth()) {
 
 	// idTokenが変化したら更新する
 	auth.onIdTokenChanged((authUser) => {
-		user.value = authUser;
+		try {
+			user.value = authUser;
+		} catch (error) {
+			console.error("トークンの更新に失敗しました:", error);
+			user.value = null;
+		}
 	});
 
 	// ********************************************************
@@ -36,7 +41,6 @@ export function useAuth(auth: Auth = getAuth()) {
 
 	// メールアドレスとパスワードで登録
 	async function registerEmailPassword(email: string, password: string) {
-		const auth = getAuth();
 		try {
 			const userCredential = await createUserWithEmailAndPassword(
 				auth,
@@ -54,7 +58,6 @@ export function useAuth(auth: Auth = getAuth()) {
 
 	// ログイン
 	async function loginEmailPassword(email: string, password: string) {
-		const auth = getAuth();
 		try {
 			const userCredential = await signInWithEmailAndPassword(
 				auth,
@@ -100,10 +103,23 @@ async function _checkAuthState(auth: Auth) {
 		// client only
 		if (!process.client) return resolve(null);
 
-		onAuthStateChanged(
+		const timeoutId = setTimeout(() => {
+			unsubscribe();
+			reject(new Error("認証状態の確認がタイムアウトしました"));
+		}, 10000);
+
+		const unsubscribe = onAuthStateChanged(
 			auth,
-			(user) => resolve(user || null),
-			(error) => reject(error),
+			(user) => {
+				clearTimeout(timeoutId);
+				unsubscribe();
+				resolve(user || null);
+			},
+			(error) => {
+				clearTimeout(timeoutId);
+				unsubscribe();
+				reject(error);
+			},
 		);
 	});
 }

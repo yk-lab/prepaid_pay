@@ -38,13 +38,21 @@ const auth = useAuth();
 const clipboard = useClipboard();
 
 const profile = ref<Profile | null>(null);
+const isLoading = ref(true);
+
 if (auth.isAuthed && auth.user) {
-	profile.value = await $fetch<Profile>("/api/profile/", {
-		baseURL: config.public.apiUrl,
-		headers: {
-			Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
-		},
-	});
+	try {
+		profile.value = await $fetch<Profile>("/api/profile/", {
+			baseURL: config.public.apiUrl,
+			headers: {
+				Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
+			},
+		});
+	} catch (e) {
+		console.error(e);
+	} finally {
+		isLoading.value = false;
+	}
 }
 
 const copy = (str: string) => {

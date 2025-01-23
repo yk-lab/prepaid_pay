@@ -1,9 +1,13 @@
-export default defineNuxtRouteMiddleware(async () => {
-	if (!process.client) return;
+import { handleAuthCheck } from "~/utils/auth";
 
-	const { isAuthed, checkAuthState } = useAuth();
-	await checkAuthState();
-	if (isAuthed.value) {
+export default defineNuxtRouteMiddleware(async () => {
+	const isAuthenticated = await handleAuthCheck();
+
+	if (isAuthenticated === null) {
+		return await navigateTo("/error", { replace: true });
+	}
+
+	if (isAuthenticated) {
 		return await navigateTo("/", { replace: true });
 	}
 });

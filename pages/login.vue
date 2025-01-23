@@ -1,7 +1,9 @@
 <template>
-  <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-    <div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-
+<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+  <div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+    <div class="mb-2 text-right text-sm/6">
+      <NuxtLink :to="{name: 'signup'}" class="rounded-sm text-cyan-600 hover:text-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">アカウントを作成する</NuxtLink>
+    </div>
     <form class="space-y-6" @submit="submit">
       <div>
         <label for="email" class="block text-sm/6 font-medium text-gray-900">メールアドレス</label>
@@ -24,10 +26,12 @@
       </div>
     </form>
   </div>
-  </div>
+</div>
 </template>
 
 <script lang="ts" setup>
+import { getAuthErrorMessage } from "~/utils/auth";
+
 definePageMeta({
 	middleware: ["auth-login"],
 });
@@ -45,7 +49,10 @@ const submit = async (event: Event) => {
 		navigateTo(to, { redirectCode: 302 });
 	} catch (e) {
 		console.error(e);
-		alert("ログインに失敗しました");
+
+		const errorMessage =
+			e instanceof Error ? getAuthErrorMessage(e) : "ログインに失敗しました。";
+		alert(errorMessage);
 	}
 };
 </script>
