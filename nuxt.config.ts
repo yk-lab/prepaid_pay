@@ -5,6 +5,7 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 	runtimeConfig: {
 		public: {
+			apiUrl: "http://localhost:8787",
 			firebase: {
 				apiKey: "",
 				authDomain: "",
