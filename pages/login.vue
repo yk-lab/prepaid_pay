@@ -6,18 +6,18 @@
     </div>
 
     <div v-if="errorMessage" class="mb-2 rounded-md bg-red-50 p-4">
-        <div class="flex">
-          <div class="shrink-0">
-            <XCircleIcon class="size-5 text-red-400" aria-hidden="true" />
-          </div>
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">ログインに失敗しました</h3>
-            <div class="mt-2 text-sm text-red-700">
-              <p>{{ errorMessage }}</p>
-            </div>
+      <div class="flex">
+        <div class="shrink-0">
+          <XCircleIcon class="size-5 text-red-400" aria-hidden="true" />
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">ログインに失敗しました</h3>
+          <div class="mt-2 text-sm text-red-700">
+            <p>{{ errorMessage }}</p>
           </div>
         </div>
       </div>
+    </div>
 
     <form class="space-y-6" @submit="submit">
       <div>

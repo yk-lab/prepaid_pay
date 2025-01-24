@@ -8,20 +8,22 @@
           {{ txn.amount }}<span class="text-sm text-gray-600 ml-0.5">円</span>
         </div>
         <div v-if="txn.status === 'pending'" class="mt-2">
-		  <button
-		    v-if="checkBalance"
-		    type="button"
-		    :disabled="isProcessing"
-		    class="block w-full rounded bg-cyan-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
-		    @click="pay"
-		  >
-		    {{ isProcessing ? '処理中...' : '支払う' }}
-		  </button>
-          <p v-else class="text-center text-red-600 font-semibold">残高が不足しています</p>
+          <template v-if="checkBalance !== null">
+            <button
+              v-if="checkBalance"
+              type="button"
+              :disabled="isProcessing"
+              class="block w-full rounded bg-cyan-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              @click="pay"
+            >
+              {{ isProcessing ? '処理中...' : '支払う' }}
+            </button>
+            <p v-else class="text-center text-red-600 font-semibold">残高が不足しています</p>
+          </template>
         </div>
         <div v-else-if="txn.status === 'completed'" class="mt-2">
           <p class="text-center text-green-600 font-semibold">支払いが完了しました</p>
-		  <NuxtLink :to="{'name': 'index'}" class="mt-2 block w-full rounded bg-cyan-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">トップページへ戻る</NuxtLink>
+          <NuxtLink :to="{'name': 'index'}" class="mt-2 block w-full rounded bg-cyan-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">トップページへ戻る</NuxtLink>
         </div>
       </div>
     </div>
@@ -77,13 +79,18 @@ txn.value = await fetchTransaction().catch((e) => {
 const checkBalance = asyncComputed(async () => {
 	if (!txn.value) return false;
 
-	const profile = await $fetch<Profile>("/api/profile/", {
-		baseURL: config.public.apiUrl,
-		headers: {
-			Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
-		},
-	});
-	return profile.balance >= txn.value.amount;
+	try {
+		const profile = await $fetch<Profile>("/api/profile/", {
+			baseURL: config.public.apiUrl,
+			headers: {
+				Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
+			},
+		});
+		return profile.balance >= txn.value.amount;
+	} catch (e) {
+		console.error(e);
+		return null;
+	}
 });
 
 const pay = async () => {
