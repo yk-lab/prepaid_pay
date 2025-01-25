@@ -5,7 +5,7 @@
       <NuxtLink :to="{name: 'signup'}" class="rounded-sm text-cyan-600 hover:text-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">アカウントを作成する</NuxtLink>
     </div>
 
-    <div v-if="errorMessage" class="mb-2 rounded-md bg-red-50 p-4">
+    <div v-if="errorMessage" class="mb-2 rounded-md bg-red-50 p-4" role="alert" aria-live="polite">
       <div class="flex">
         <div class="shrink-0">
           <XCircleIcon class="size-5 text-red-400" aria-hidden="true" />
@@ -30,9 +30,12 @@
       <div>
         <div class="flex items-center justify-between">
           <label for="password" class="block text-sm/6 font-medium text-gray-900">パスワード</label>
+          <button type="button" @click="togglePasswordVisibility" class="text-sm text-cyan-600 hover:text-cyan-500">
+            {{ showPassword ? '非表示' : '表示' }}
+          </button>
         </div>
         <div class="mt-2">
-          <input type="password" name="password" id="password" autocomplete="current-password" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-cyan-600 sm:text-sm/6" v-model="password">
+          <input :type="showPassword ? 'text' : 'password'" name="password" id="password" autocomplete="current-password" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-cyan-600 sm:text-sm/6" v-model="password">
         </div>
       </div>
 
@@ -59,6 +62,11 @@ const email = ref("");
 const password = ref("");
 const isLoading = ref(false);
 const errorMessage = ref("");
+const showPassword = ref(false);
+
+const togglePasswordVisibility = () => {
+	showPassword.value = !showPassword.value;
+};
 
 const submit = async (event: Event) => {
 	event.preventDefault();
