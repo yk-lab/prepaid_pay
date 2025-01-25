@@ -30,6 +30,11 @@
     </div>
   </div>
 </div>
+<div v-else class="sm:mx-auto sm:w-full sm:max-w-sm">
+  <div class="animate-pulse space-y-4">
+    <div class="h-20 bg-gray-200 rounded"></div>
+  </div>
+</div>
 </template>
 
 <script lang="ts" setup>

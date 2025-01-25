@@ -30,7 +30,10 @@
       <div>
         <div class="flex items-center justify-between">
           <label for="password" class="block text-sm/6 font-medium text-gray-900">パスワード</label>
-          <button type="button" @click="togglePasswordVisibility" class="text-sm text-cyan-600 hover:text-cyan-500">
+          <button type="button" @click="togglePasswordVisibility" class="text-sm text-cyan-600 hover:text-cyan-500"
+            :aria-label="showPassword ? 'パスワードを非表示にする' : 'パスワードを表示する'"
+            :aria-pressed="showPassword"
+          >
             {{ showPassword ? '非表示' : '表示' }}
           </button>
         </div>
