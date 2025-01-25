@@ -33,6 +33,7 @@
 
 <script lang="ts" setup>
 import { asyncComputed } from "@vueuse/core";
+import { FetchError } from "ofetch";
 import type { Profile, Transaction } from "~/schemas";
 
 definePageMeta({
@@ -44,6 +45,7 @@ const MAX_RETRIES = 3;
 const config = useRuntimeConfig();
 const auth = useAuth();
 const route = useRoute();
+const toast = useToast();
 
 const txnId = ref(route.params.txnId);
 const txn = ref<Transaction | null>(null);
@@ -98,24 +100,51 @@ const pay = async () => {
 	isProcessing.value = true;
 
 	try {
-		const txn = await $fetch<Transaction>(`/api/prepaid/pay/${txnId.value}/`, {
+		const _txn = await $fetch<Transaction>(`/api/prepaid/pay/${txnId.value}/`, {
 			baseURL: config.public.apiUrl,
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${await auth.user.value?.getIdToken()}`,
 			},
 		});
-		if (txn.status === "completed") {
-			alert("支払いが完了しました");
+		if (_txn.status === "completed") {
+			txn.value = _txn;
+			toast.success("支払いが完了しました");
 		} else {
-			alert("支払いに失敗しました");
+			alert(
+				"支払い処理が完了できませんでした。繰り返し表示される場合は、お問い合わせください。",
+			);
 		}
 		location.reload();
 	} catch (e) {
 		console.error(e);
-		alert(
-			"支払い処理中にエラーが発生しました。時間をおいて再度お試しください。",
-		);
+		const baseMessage =
+			"支払い処理中にエラーが発生しました。時間をおいて再度お試しください。";
+
+		const getMessage = (e: unknown) => {
+			if (e instanceof Error) {
+				if (e instanceof FetchError) {
+					return e.status === 400
+						? "残高が不足しています。"
+						: e.status === 401
+							? "認証の有効期限が切れています。再度ログインしてください。"
+							: e.status === 404
+								? "取引情報が見つかりません。"
+								: e.status === 500
+									? "サーバーエラーが発生しました。"
+									: baseMessage;
+				}
+				return `${baseMessage} (${e.message})`;
+			}
+
+			if (typeof e === "string" || e instanceof String) {
+				return e;
+			}
+
+			return baseMessage;
+		};
+
+		alert(e instanceof Error ? getMessage(e) : baseMessage);
 	} finally {
 		isProcessing.value = false;
 	}

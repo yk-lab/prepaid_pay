@@ -73,6 +73,9 @@ const submit = async (event: Event) => {
 		isLoading.value = true;
 		await auth.loginEmailPassword(email.value, password.value);
 
+		email.value = "";
+		password.value = "";
+
 		const to = useRoute().redirectedFrom?.fullPath || "/";
 		navigateTo(to, { redirectCode: 302 });
 	} catch (e) {
