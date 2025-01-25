@@ -28,8 +28,18 @@ jobs:
     - name: Install dependencies
       run: pnpm install
   
+    - name: Check TypeScript
+      run: pnpm vue-tsc --noEmit
+
     - name: Build project
       run: pnpm build
+
+    - name: Send webpack stats to RelativeCI
+      uses: relative-ci/agent-action@v2
+      with:
+        webpackStatsFile: ./.nuxt/dist/client/webpack-stats.json
+        key: ${{ secrets.RELATIVE_CI_KEY }}
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     runs-on: ubuntu-latest
@@ -61,6 +71,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
