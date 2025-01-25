@@ -104,8 +104,18 @@ const checkBalance = asyncComputed(async () => {
 		});
 		return profile.balance >= txn.value.amount;
 	} catch (e) {
-		console.error(e);
-		return null;
+		console.error("Profile fetch failed:", e);
+		if (e instanceof FetchError) {
+			if (e.status === 401) {
+				toast.error("認証の有効期限が切れています。再度ログインしてください。");
+				await navigateTo("/login");
+			} else {
+				toast.error(
+					"残高の確認に失敗しました。時間をおいて再度お試しください。",
+				);
+			}
+		}
+		return false;
 	}
 });
 
