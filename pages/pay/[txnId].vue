@@ -13,10 +13,12 @@
               v-if="checkBalance"
               type="button"
               :disabled="isProcessing"
-			   :aria-busy="isProcessing"
+			  :aria-busy="isProcessing"
               class="block w-full rounded bg-cyan-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed"
               @click="pay"
-            >
+			  aria-label="支払いを実行する"
+			  role="button"
+			>
               {{ isProcessing ? '処理中...' : '支払う' }}
             </button>
             <p v-else class="text-center text-red-600 font-semibold" role="alert">残高が不足しています</p>
@@ -132,37 +134,35 @@ const pay = async () => {
 			},
 		});
 		if (_txn.status === "completed") {
-			txn.value = _txn;
 			toast.success("支払いが完了しました");
 		} else {
 			toast.error(
 				"支払い処理が完了できませんでした。繰り返し表示される場合は、お問い合わせください。",
 			);
 		}
-		location.reload();
+		txn.value = _txn;
 	} catch (e) {
 		console.error(e);
 		const baseMessage =
 			"支払い処理中にエラーが発生しました。時間をおいて再度お試しください。";
 
 		const getMessage = (e: unknown): string => {
+			if (e instanceof FetchError) {
+				const statusMessages = {
+					400: "残高が不足しています。",
+					401: "認証の有効期限が切れています。再度ログインしてください。",
+					404: "取引情報が見つかりません。",
+					500: "サーバーエラーが発生しました。",
+				} as Record<number, string>;
+				return (e.status && statusMessages?.[e.status]) || baseMessage;
+			}
+
 			if (e instanceof Error) {
-				if (e instanceof FetchError) {
-					return e.status === 400
-						? "残高が不足しています。"
-						: e.status === 401
-							? "認証の有効期限が切れています。再度ログインしてください。"
-							: e.status === 404
-								? "取引情報が見つかりません。"
-								: e.status === 500
-									? "サーバーエラーが発生しました。"
-									: baseMessage;
-				}
 				return `${baseMessage} (${e.message})`;
 			}
 
-			if (typeof e === "string" || e instanceof String) {
-				return e.toString();
+			if (typeof e === "string") {
+				return e;
 			}
 
 			return baseMessage;
