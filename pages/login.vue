@@ -96,4 +96,9 @@ const submit = async (event: Event) => {
 		isLoading.value = false;
 	}
 };
+
+onUnmounted(() => {
+	email.value = "";
+	password.value = "";
+});
 </script>

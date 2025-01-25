@@ -100,4 +100,11 @@ const submit = async (event: Event) => {
 		isLoading.value = false;
 	}
 };
+
+onUnmounted(() => {
+	validationError.value = "";
+	email.value = "";
+	password.value = "";
+	passwordConfirm.value = "";
+});
 </script>
